@@ -1,0 +1,19 @@
+# --- MLOps & Data ---
+# On ignore les datasets et modèles localement pour forcer l'usage de LFS ou éviter l'encombrement [cite: 16]
+*.csv
+*.json
+*.pkl
+*.h5
+*.pt
+*.onnx
+
+# --- Sécurité & Environnement ---
+# Ne JAMAIS pusher les clés API ou les tokens Hugging Face 
+.env
+.secrets
+.python-version
+
+# --- IDE & OS ---
+.vscode/
+.idea/
+.DS_Store
