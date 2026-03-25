@@ -68,9 +68,7 @@ def preprocess(text: str) -> str:
 dataset = pd.read_csv(DATA_PATH)
 dataset["polarity_label"] = dataset["polarity"].map({0.0: "negative", 1.0: "positive"})
 
-positive = dataset[dataset["polarity_label"] == "positive"].sample(
-    28589, random_state=42
-)
+positive = dataset[dataset["polarity_label"] == "positive"]
 negative = dataset[dataset["polarity_label"] == "negative"]
 dataset = pd.concat([positive, negative]).reset_index(drop=True)
 
