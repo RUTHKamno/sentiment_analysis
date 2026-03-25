@@ -8,6 +8,7 @@ dependencies = [
     "huggingface-hub>=1.7.2",
     "nltk>=3.9.4",
     "pandas>=2.3.3",
+    "pytest>=9.0.2",
     "scikit-learn>=1.7.2",
     "unidecode>=1.4.0",
 ]
