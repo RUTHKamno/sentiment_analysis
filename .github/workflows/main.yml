@@ -1,0 +1,138 @@
+name: CI/CD Pipeline
+
+on:
+  pull_request:
+    branches:
+      - main
+      - develop
+  push:
+    branches:
+      - main
+
+jobs:
+  # ────────────────────────────────────────────
+  # JOB 1 : Entraînement + Tests
+  # ────────────────────────────────────────────
+  train-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Récupérer le code
+        uses: actions/checkout@v4
+
+      - name: Installer Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      - name: Installer les dépendances
+        run: pip install -r requirements.txt
+
+      - name: Entraîner le modèle
+        run: python src/train.py
+        env:
+          DATA_PATH: data/b2w_train.csv
+          MODEL_DIR: models
+
+      - name: Lancer les tests
+        run: pytest tests/ -v
+        env:
+          DATA_PATH: data/b2w_test.csv
+          MODEL_DIR: models
+
+  # ────────────────────────────────────────────
+  # JOB 2 : Notification email
+  # S'exécute toujours, succès ou échec
+  # ────────────────────────────────────────────
+  notify:
+    runs-on: ubuntu-latest
+    needs: train-and-test
+    if: always()
+
+    steps:
+      - name: Email succès
+        if: needs.train-and-test.result == 'success'
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 465
+          secure: true
+          username: ${{ secrets.SMTP_USER }}
+          password: ${{ secrets.SMTP_PASSWORD }}
+          to: ${{ secrets.SMTP_RECIPIENTS }}
+          from: CI/CD Bot <${{ secrets.SMTP_USER }}>
+          subject: "✅ [CI/CD] Tests passés — ${{ github.ref_name }}"
+          body: |
+            Bonjour,
+
+            Les tests du pipeline ont été exécutés avec succès.
+
+            Branche  : ${{ github.ref_name }}
+            Commit   : ${{ github.sha }}
+            Auteur   : ${{ github.actor }}
+
+            Le modèle a atteint le seuil d'accuracy requis (>= 80%).
+
+            Cordialement,
+            CI/CD Bot
+
+      - name: Email échec
+        if: needs.train-and-test.result == 'failure'
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 465
+          secure: true
+          username: ${{ secrets.SMTP_USER }}
+          password: ${{ secrets.SMTP_PASSWORD }}
+          to: ${{ secrets.SMTP_RECIPIENTS }}
+          from: CI/CD Bot <${{ secrets.SMTP_USER }}>
+          subject: "❌ [CI/CD] Tests échoués — ${{ github.ref_name }}"
+          body: |
+            Bonjour,
+
+            Les tests du pipeline ont échoué.
+
+            Branche  : ${{ github.ref_name }}
+            Commit   : ${{ github.sha }}
+            Auteur   : ${{ github.actor }}
+
+            Veuillez consulter les logs GitHub Actions pour plus de détails :
+            ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
+            Cordialement,
+            CI/CD Bot
+
+  # ────────────────────────────────────────────
+  # JOB 3 : Déploiement Hugging Face
+  # Uniquement si tests OK et branche main
+  # ────────────────────────────────────────────
+  deploy:
+    runs-on: ubuntu-latest
+    needs: train-and-test
+    if: needs.train-and-test.result == 'success' && github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Récupérer le code
+        uses: actions/checkout@v4
+
+      - name: Installer Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      - name: Installer les dépendances
+        run: pip install -r requirements.txt
+
+      - name: Entraîner le modèle pour le déploiement
+        run: python src/train.py
+        env:
+          DATA_PATH: data/b2w_train.csv
+          MODEL_DIR: models
+
+      - name: Uploader le modèle sur Hugging Face Hub
+        run: python src/upload_to_hub.py
+        env:
+          HF_TOKEN:  ${{ secrets.HF_TOKEN }}
+          HF_REPO:   ${{ secrets.HF_REPO }}
+          MODEL_DIR: models
