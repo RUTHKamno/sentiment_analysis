@@ -1,6 +1,17 @@
 # --- MLOps & Data ---
-.cache/
+*.csv
+*.json
+*.pkl
+*.h5
+*.pt
+*.onnx
 
+# FORCE l'inclusion du dossier data et models malgré les règles ci-dessus
+!data/
+!data/*.csv
+!models/
+!models/*.pkl
+!models/*.onnx
 # --- Sécurité & Environnement ---
 # Ne JAMAIS pusher les clés API ou les tokens Hugging Face 
 .env
