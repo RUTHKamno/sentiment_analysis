@@ -22,7 +22,7 @@ os.makedirs(MODEL_DIR, exist_ok=True)
 # ──────────────────────────────────────────────
 # 1. LOAD DATA
 # ──────────────────────────────────────────────
-dataset = pd.read_csv(DATA_PATH, sep=',')
+dataset = pd.read_csv(DATA_PATH)
 
 # --- AJOUTE CES LIGNES POUR LES LOGS ---
 print("--- DEBUG LOGS ---")
