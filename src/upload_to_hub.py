@@ -5,10 +5,11 @@ Upload du modèle et du vectoriseur sur Hugging Face Hub.
 
 import os
 import pickle
+
 from huggingface_hub import HfApi, login
 
-HF_TOKEN  = os.environ["HF_TOKEN"]
-HF_REPO   = os.environ["HF_REPO"]
+HF_TOKEN = os.environ["HF_TOKEN"]
+HF_REPO = os.environ["HF_REPO"]
 MODEL_DIR = os.environ.get("MODEL_DIR", "../models")
 
 # Connexion à Hugging Face

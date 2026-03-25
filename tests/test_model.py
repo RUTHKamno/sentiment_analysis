@@ -11,11 +11,11 @@ import pickle
 import string
 
 import nltk
-import unidecode
 import pandas as pd
-from sklearn.model_selection import train_test_split
+import unidecode
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics import accuracy_score, precision_score
+from sklearn.model_selection import train_test_split
 
 # ──────────────────────────────────────────────
 # CHEMINS
@@ -51,17 +51,17 @@ def preprocess(text: str) -> str:
 
     tokenizer = nltk.tokenize.WordPunctTokenizer()
     stemmer = nltk.RSLPStemmer()
-    
+
     tokens = tokenizer.tokenize(text)
     # Nettoyage (minuscules + suppression accents)
     tokens = [unidecode.unidecode(t.lower()) for t in tokens]
-    
+
     # FILTRE CRUCIAL : On vérifie que 't' n'est pas vide ET pas dans les stopwords
     tokens = [t for t in tokens if t.strip() and t not in stopwords_puncts]
-    
+
     # Stemming sécurisé
     tokens = [stemmer.stem(t) for t in tokens if len(t) > 0]
-    
+
     return " ".join(tokens)
 
 
