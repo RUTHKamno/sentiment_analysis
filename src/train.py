@@ -22,7 +22,16 @@ os.makedirs(MODEL_DIR, exist_ok=True)
 # ──────────────────────────────────────────────
 # 1. LOAD DATA
 # ──────────────────────────────────────────────
-dataset = pd.read_csv(DATA_PATH, sep=';')
+dataset = pd.read_csv(DATA_PATH, sep=',')
+
+# --- AJOUTE CES LIGNES POUR LES LOGS ---
+print("--- DEBUG LOGS ---")
+print(f"Chemin du fichier : {DATA_PATH}")
+print(f"Nombre de lignes et colonnes : {dataset.shape}")
+print(f"Noms réels des colonnes : {dataset.columns.tolist()}")
+print(f"Aperçu des 2 premières lignes :\n{dataset.head(2)}")
+print("------------------")
+# ---------------------------------------
 # ──────────────────────────────────────────────
 # 2. CLEANING & BALANCING
 # ──────────────────────────────────────────────
