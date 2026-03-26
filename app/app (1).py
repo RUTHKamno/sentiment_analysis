@@ -18,10 +18,10 @@ from huggingface_hub import hf_hub_download
 # ──────────────────────────────────────────────
 HF_REPO = os.environ.get("HF_REPO", "kamcheruth/b2w_sentiment_analysis")
 
-model_path      = hf_hub_download(repo_id=HF_REPO, filename="model.pkl")
+model_path = hf_hub_download(repo_id=HF_REPO, filename="model.pkl")
 vectorizer_path = hf_hub_download(repo_id=HF_REPO, filename="vectorizer.pkl")
 
-model      = pickle.load(open(model_path,      "rb"))
+model = pickle.load(open(model_path, "rb"))
 vectorizer = pickle.load(open(vectorizer_path, "rb"))
 
 print(f"Modèle chargé depuis : {HF_REPO}")
@@ -30,19 +30,18 @@ print(f"Modèle chargé depuis : {HF_REPO}")
 # Pré-traitement (identique à src/train.py)
 # ──────────────────────────────────────────────
 nltk.download("stopwords", quiet=True)
-nltk.download("rslp",      quiet=True)
+nltk.download("rslp", quiet=True)
 
-puncts         = list(string.punctuation)
-stopwords_list = list(set([
-    unidecode.unidecode(sw)
-    for sw in nltk.corpus.stopwords.words("portuguese")
-]))
+puncts = list(string.punctuation)
+stopwords_list = list(
+    set([unidecode.unidecode(sw) for sw in nltk.corpus.stopwords.words("portuguese")])
+)
 stopwords_puncts = set(stopwords_list + puncts)
 
 
 def preprocess(text: str) -> str:
     tokenizer = nltk.tokenize.WordPunctTokenizer()
-    stemmer   = nltk.RSLPStemmer()
+    stemmer = nltk.RSLPStemmer()
     tokens = tokenizer.tokenize(text)
     tokens = [unidecode.unidecode(t.lower()) for t in tokens]
     tokens = [t for t in tokens if t not in stopwords_puncts]
@@ -56,10 +55,10 @@ def preprocess(text: str) -> str:
 def predict(text: str):
     if not text.strip():
         return "Veuillez entrer un avis.", {}
-    clean  = preprocess(text)
-    X      = vectorizer.transform([clean])
-    proba  = model.predict_proba(X)[0]
-    label  = model.predict(X)[0]
+    clean = preprocess(text)
+    X = vectorizer.transform([clean])
+    proba = model.predict_proba(X)[0]
+    label = model.predict(X)[0]
     result = "Positif ✅" if label == 1.0 else "Négatif ❌"
     scores = {"Positif": float(proba[1]), "Négatif": float(proba[0])}
     return result, scores
@@ -70,7 +69,9 @@ def predict(text: str):
 # ──────────────────────────────────────────────
 with gr.Blocks(title="B2W Sentiment Analysis") as demo:
     gr.Markdown("# 🇧🇷 B2W Sentiment Analysis")
-    gr.Markdown("Entrez un avis produit en **portugais brésilien** pour analyser son sentiment.")
+    gr.Markdown(
+        "Entrez un avis produit en **portugais brésilien** pour analyser son sentiment."
+    )
 
     text_input = gr.Textbox(
         label="Avis produit",
