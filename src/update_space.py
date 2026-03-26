@@ -1,51 +1,53 @@
 """
 src/update_space.py
-Met à jour automatiquement un Hugging Face Space (Gradio) avec :
-- app.py (depuis app/app.py)
-- model.pkl + vectorizer.pkl (depuis models/)
+Déploie l'interface Gradio sur Hugging Face Spaces.
+Le modèle n'est PAS uploadé ici — l'app le télécharge
+elle-même depuis HF Hub au démarrage via hf_hub_download.
 """
 
 import os
-
 from huggingface_hub import HfApi, login
 
+HF_TOKEN      = os.environ["HF_TOKEN"]
+HF_SPACE_REPO = os.environ["HF_SPACE_REPO"]  # ex: kamcheruth/b2w_sentiment_analysis_app
+HF_REPO       = os.environ["HF_REPO"]        # ex: kamcheruth/b2w_sentiment_analysis
 
-def main():
-    hf_token = os.environ["HF_TOKEN"]
-    hf_space_repo = os.environ[
-        "HF_SPACE_REPO"
-    ]  # ex: kamcheruth/b2w_sentiment_analysis_app
+login(token=HF_TOKEN)
+api = HfApi()
 
-    model_dir = os.environ.get("MODEL_DIR", "models")
-    app_src_path = os.environ.get("APP_PATH", os.path.join("app", "app.py"))
+# Crée le Space s'il n'existe pas encore
+api.create_repo(
+    repo_id=HF_SPACE_REPO,
+    repo_type="space",
+    space_sdk="gradio",
+    exist_ok=True,
+)
+print(f"Space prêt : https://huggingface.co/spaces/{HF_SPACE_REPO}")
 
-    login(token=hf_token)
-    api = HfApi()
+# Définir HF_REPO comme variable d'environnement du Space
+# (utilisée par app.py pour savoir où télécharger le modèle)
+api.add_space_variable(
+    repo_id=HF_SPACE_REPO,
+    key="HF_REPO",
+    value=HF_REPO,
+)
+print(f"Variable HF_REPO={HF_REPO} configurée sur le Space")
 
-    api.create_repo(
-        repo_id=hf_space_repo,
+# Uploader uniquement app.py et requirements.txt
+# (pas de model.pkl ni vectorizer.pkl — l'app les télécharge depuis HF Hub)
+files = {
+    "app/app.py":       "app.py",
+    "requirements.txt": "requirements.txt",
+}
+
+for local_path, remote_path in files.items():
+    api.upload_file(
+        path_or_fileobj=local_path,
+        path_in_repo=remote_path,
+        repo_id=HF_SPACE_REPO,
         repo_type="space",
-        exist_ok=True,
-        space_sdk="gradio",
+        commit_message=f"CI/CD: update {remote_path}",
     )
+    print(f"✅ {local_path} → {remote_path}")
 
-    uploads = [
-        (app_src_path, "app.py"),
-        (os.path.join(model_dir, "model.pkl"), "model.pkl"),
-        (os.path.join(model_dir, "vectorizer.pkl"), "vectorizer.pkl"),
-    ]
-
-    for local_path, path_in_repo in uploads:
-        api.upload_file(
-            path_or_fileobj=local_path,
-            path_in_repo=path_in_repo,
-            repo_id=hf_space_repo,
-            repo_type="space",
-            commit_message=f"CI/CD: update {path_in_repo}",
-        )
-
-    print(f"✅ Space mis à jour : https://huggingface.co/spaces/{hf_space_repo}")
-
-
-if __name__ == "__main__":
-    main()
+print(f"\nSpace disponible sur : https://huggingface.co/spaces/{HF_SPACE_REPO}")
