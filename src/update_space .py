@@ -6,11 +6,12 @@ elle-même depuis HF Hub au démarrage via hf_hub_download.
 """
 
 import os
+
 from huggingface_hub import HfApi, login
 
-HF_TOKEN      = os.environ["HF_TOKEN"]
+HF_TOKEN = os.environ["HF_TOKEN"]
 HF_SPACE_REPO = os.environ["HF_SPACE_REPO"]  # ex: kamcheruth/b2w_sentiment_analysis_app
-HF_REPO       = os.environ["HF_REPO"]        # ex: kamcheruth/b2w_sentiment_analysis
+HF_REPO = os.environ["HF_REPO"]  # ex: kamcheruth/b2w_sentiment_analysis
 
 login(token=HF_TOKEN)
 api = HfApi()
@@ -36,7 +37,7 @@ print(f"Variable HF_REPO={HF_REPO} configurée sur le Space")
 # Uploader uniquement app.py et requirements.txt
 # (pas de model.pkl ni vectorizer.pkl — l'app les télécharge depuis HF Hub)
 files = {
-    "app/app.py":       "app.py",
+    "app/app.py": "app.py",
     "requirements.txt": "requirements.txt",
 }
 
