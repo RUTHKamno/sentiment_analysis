@@ -118,6 +118,8 @@ jobs:
     steps:
       - name: Récupérer le code
         uses: actions/checkout@v4
+        with:
+          lfs: true
 
       - name: Installer Python
         uses: actions/setup-python@v5
