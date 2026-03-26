@@ -19,6 +19,8 @@ jobs:
     steps:
       - name: Récupérer le code
         uses: actions/checkout@v4
+        with:
+          lfs: true
 
       - name: Installer Python
         uses: actions/setup-python@v5
@@ -144,8 +146,7 @@ jobs:
         env:
           HF_TOKEN:      ${{ secrets.HF_TOKEN }}
           HF_SPACE_REPO: ${{ secrets.HF_SPACE_REPO }}
-          MODEL_DIR:     models
-
+          HF_REPO:   ${{ secrets.HF_REPO }}
       # ── Membre 2 ──
       - name: Déployer le modèle — Membre 2
         run: python src/upload_to_hub.py
@@ -159,7 +160,7 @@ jobs:
         env:
           HF_TOKEN:      ${{ secrets.HF_TOKEN_2 }}
           HF_SPACE_REPO: ${{ secrets.HF_SPACE_REPO_2 }}
-          MODEL_DIR:     models
+          HF_REPO_2:   ${{ secrets.HF_REPO_2 }}
 
       # ── Membre 3 ──
       - name: Déployer le modèle — Membre 3
@@ -174,4 +175,4 @@ jobs:
         env:
           HF_TOKEN:      ${{ secrets.HF_TOKEN_3 }}
           HF_SPACE_REPO: ${{ secrets.HF_SPACE_REPO_3 }}
-          MODEL_DIR:     models
+          HF_REPO_3:   ${{ secrets.HF_REPO_3 }}
