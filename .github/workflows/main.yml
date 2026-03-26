@@ -138,3 +138,4 @@ jobs:
           HF_TOKEN:  ${{ secrets.HF_TOKEN }}
           HF_REPO:   ${{ secrets.HF_REPO }}
           MODEL_DIR: models
+      

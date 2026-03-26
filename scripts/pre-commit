@@ -1,0 +1,49 @@
+#!/bin/bash
+
+# --- 1. NETTOYAGE DES NOTEBOOKS (nbstripout) ---
+echo "🧹 Nettoyage des outputs Jupyter..."
+nbstripout --is-dirty *.ipynb 2>/dev/null
+if [ $? -eq 0 ]; then
+    nbstripout *.ipynb
+fi
+
+# --- 2. TRI DES IMPORTS (isort) ---
+echo "🗂️ Tri des imports (isort)..."
+isort .
+
+# --- 3. FORMATAGE DU CODE (black) ---
+echo "🎨 Formatage du code (black)..."
+black .
+
+# --- 4. VÉRIFICATION SYNTAXE (flake8) ---
+echo "🔍 Vérification PEP8 (flake8)..."
+flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+
+# --- 5. SÉCURITÉ (detect-secrets) ---
+echo "🛡️ Scan des secrets..."
+detect-secrets-hook --baseline .secrets.baseline $(git diff --cached --name-only)
+if [ $? -ne 0 ]; then
+    echo "❌ Erreur : Un secret a été détecté !"
+    exit 1
+fi
+
+# --- 6. LIMITE DE TAILLE & LFS (5Mo) ---
+echo "⚖️ Vérification de la taille des fichiers..."
+limit=$((5 * 1024 * 1024)) # 5 Mo
+
+for file in $(git diff --cached --name-only); do
+    if [ -f "$file" ]; then
+        filesize=$(stat -c%s "$file")
+        is_lfs=$(git check-attr filter "$file" | grep -q "lfs" && echo "yes" || echo "no")
+
+        if [ "$filesize" -gt "$limit" ] && [ "$is_lfs" = "no" ]; then
+            echo "❌ ERREUR : Le fichier '$file' fait $((filesize/1024/1024))Mo."
+            echo "Il dépasse la limite de 5Mo et n'est pas tracké par LFS."
+            echo "Action : git lfs track '$file'"
+            exit 1
+        fi
+    fi
+done
+
+echo "✅ Toutes les vérifications sont passées !"
+exit 0
