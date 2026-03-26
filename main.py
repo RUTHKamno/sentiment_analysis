@@ -1,5 +1,9 @@
+from app.app import create_demo
+
+
 def main():
-    print("Hello from projet-sn!")
+    demo = create_demo()
+    demo.launch()
 
 
 if __name__ == "__main__":

@@ -19,8 +19,6 @@ jobs:
     steps:
       - name: Récupérer le code
         uses: actions/checkout@v4
-        with:
-          lfs: true
 
       - name: Installer Python
         uses: actions/setup-python@v5
@@ -99,7 +97,7 @@ jobs:
             Commit   : ${{ github.sha }}
             Auteur   : ${{ github.actor }}
 
-            Veuillez consulter les logs GitHub Actions pour plus de détails :
+            Consultez les logs GitHub Actions :
             ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
 
             Cordialement,
@@ -107,6 +105,7 @@ jobs:
 
   # ────────────────────────────────────────────
   # JOB 3 : Déploiement Hugging Face
+  # Un déploiement par membre de l'équipe
   # Uniquement si tests OK et branche main
   # ────────────────────────────────────────────
   deploy:
@@ -126,16 +125,53 @@ jobs:
       - name: Installer les dépendances
         run: pip install -r requirements.txt
 
-      - name: Entraîner le modèle pour le déploiement
+      - name: Entraîner le modèle
         run: python src/train.py
         env:
           DATA_PATH: data/b2w_train.csv
           MODEL_DIR: models
 
-      - name: Uploader le modèle sur Hugging Face Hub
+      # ── Membre 1 ──
+      - name: Déployer le modèle — Membre 1
         run: python src/upload_to_hub.py
         env:
           HF_TOKEN:  ${{ secrets.HF_TOKEN }}
           HF_REPO:   ${{ secrets.HF_REPO }}
           MODEL_DIR: models
-      
+
+      - name: Déployer le Space — Membre 1
+        run: python src/update_space.py
+        env:
+          HF_TOKEN:      ${{ secrets.HF_TOKEN }}
+          HF_SPACE_REPO: ${{ secrets.HF_SPACE_REPO }}
+          MODEL_DIR:     models
+
+      # ── Membre 2 ──
+      - name: Déployer le modèle — Membre 2
+        run: python src/upload_to_hub.py
+        env:
+          HF_TOKEN:  ${{ secrets.HF_TOKEN_2 }}
+          HF_REPO:   ${{ secrets.HF_REPO_2 }}
+          MODEL_DIR: models
+
+      - name: Déployer le Space — Membre 2
+        run: python src/update_space.py
+        env:
+          HF_TOKEN:      ${{ secrets.HF_TOKEN_2 }}
+          HF_SPACE_REPO: ${{ secrets.HF_SPACE_REPO_2 }}
+          MODEL_DIR:     models
+
+      # ── Membre 3 ──
+      - name: Déployer le modèle — Membre 3
+        run: python src/upload_to_hub.py
+        env:
+          HF_TOKEN:  ${{ secrets.HF_TOKEN_3 }}
+          HF_REPO:   ${{ secrets.HF_REPO_3 }}
+          MODEL_DIR: models
+
+      - name: Déployer le Space — Membre 3
+        run: python src/update_space.py
+        env:
+          HF_TOKEN:      ${{ secrets.HF_TOKEN_3 }}
+          HF_SPACE_REPO: ${{ secrets.HF_SPACE_REPO_3 }}
+          MODEL_DIR:     models
